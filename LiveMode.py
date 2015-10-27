@@ -9,7 +9,7 @@ import time
 
 import MMCorePy
 import cv2
-from pyqtgraph.widgets.RawImageWidget import RawImageGLWidget, RawImageWidget
+#from pyqtgraph.widgets.RawImageWidget import RawImageGLWidget, RawImageWidget
 import functools
 
 class VideoView(QtGui.QWidget):
@@ -40,7 +40,8 @@ class VideoView(QtGui.QWidget):
         # # mmc.setCircularBufferMemoryFootprint(100)
         self.cam=self.mmc.getCameraDevice()
         self.mmc.setExposure(50)
-        self.mmc.setProperty(self.cam, 'Gain', 1)
+        if self.mmc.hasProperty(self.cam,'Gain'):
+            self.mmc.setProperty(self.cam, 'Gain', 1)
         Nch=len(self.channels)
         startChan=self.channels[Nch-1]
         for ch in self.channels:
@@ -85,7 +86,7 @@ class VideoView(QtGui.QWidget):
         
         keys = self.exposure_times.keys()
         
-        gridlay=QtGui.QGridLayout(margin=0,spacing=-1)
+        gridlay=QtGui.QGridLayout(spacing=-1)
         for i,ch in enumerate(self.channels):
             btn=QtGui.QPushButton(ch,self)
             self.chnButtons.append(btn)
@@ -140,7 +141,7 @@ class VideoView(QtGui.QWidget):
             exposure_times[ch]=spnBox.value()
         return exposure_times
         
-    def setExposureAuto(self,evt):
+    def setExposureAuto(self):
     
         self.mmc.stopSequenceAcquisition() 
         perc=95; #the goal is to make the X percentile value equal to Y percent of the maximum value
@@ -252,7 +253,8 @@ class VideoView(QtGui.QWidget):
 
     def lut_convert16as8bit(self,image, display_min, display_max) :
         lut = np.arange(2**16, dtype='uint16')
-        lut = self.display8bit(lut, display_min, display_max)
+        if display_max >= 2**16: display_max = 2**16 - 1
+        lut = self.display8bit(lut, display_min, display_max)        
         return np.take(lut, image)
         
     def updateData(self):
@@ -263,9 +265,12 @@ class VideoView(QtGui.QWidget):
             #rgb32 = self.mmc.popNextImage()
             data =  self.mmc.getLastImage()
             if data.dtype == np.uint16:
-                maxval=self.imgSrc.get_max_pixel_value()
+                #maxval = data.max() #auto-scales the brightness to fill dynamic range
+                maxval= self.imgSrc.get_max_pixel_value()
                 data=self.lut_convert16as8bit(data,0,maxval)
             gray = data.transpose()
+
+            #Should be taken care of in imageSource.get_image_orientation
             flipped = np.fliplr(gray)
            
             #gray=cv2.equalizeHist(gray)
@@ -274,7 +279,7 @@ class VideoView(QtGui.QWidget):
         #else:
             #print('No frame')
         
-
+        #TODO: check if window is open and stop refreshing if it isn't.
         QtCore.QTimer.singleShot(self.mmc.getExposure(), self.updateData)
         #now = ptime.time()
         #fps1 = 1.0 / (now-self.updateTime)
@@ -304,3 +309,4 @@ def launchLive(mmc,exposure_times):
         QtGui.QApplication.instance().exec_()
         
     return vidview.getExposureTimes()
+    

@@ -136,6 +136,7 @@ class ImageCollection():
 
     def lut_convert16as8bit(self,image, display_min, display_max) :
         lut = np.arange(2**16, dtype='uint16')
+        if display_max >= 2**16: display_max = 2**16 - 1
         lut = self.display8bit(lut, display_min, display_max)
         return np.take(lut, image)
 
@@ -194,7 +195,8 @@ class ImageCollection():
             (thedata,bbox)=self.imageSource.take_image(x,y)
             if thedata.dtype == np.uint16:
                 print "converting"
-                maxval=self.imageSource.get_max_pixel_value()
+                #maxval= thedata.max()
+                maxval = self.imageSource.get_max_pixel_value()
                 thedata=self.lut_convert16as8bit(thedata,0,maxval)
             
         except:
@@ -205,6 +207,9 @@ class ImageCollection():
         bbox.printRect()
         print "x,y is",x,y
         
+        #flip image - TODO fix in config file
+        thedata = np.fliplr(thedata)
+
         #add this image to the collection
         theimage=self.addImage(thedata,bbox)
         return theimage
