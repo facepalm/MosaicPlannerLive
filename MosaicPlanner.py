@@ -713,6 +713,8 @@ class MosaicPanel(FigureCanvas):
         skip)the number of positions in pixels to skip over when sampling shifts
         
         """
+        use_SIFT_alignment = False
+        
         newpos=self.posList.new_position_after_step()
         #if the new postiion was not created, or if it wasn't on the array stop and return False
         if newpos == None:
@@ -720,17 +722,20 @@ class MosaicPanel(FigureCanvas):
         #if not self.is_pos_on_array(newpos):
         #    return False
         #if things were fine, fine adjust the position 
-        #corrval=self.CorrTool(window,delta,skip)
-        #if corrval>.3:
-        #    return True
-        #else:
-        #    return False            
-        inliers=self.SiftCorrTool(window)
-        if inliers>12:
-            return True
+        if use_SIFT_alignment:
+            inliers=self.SiftCorrTool(window)
+            if inliers>12:
+                return True
+            else:
+                return False
         else:
-            return False    
-        
+            corrval=self.CorrTool(window,delta,skip)
+            if corrval>.3:
+                return True
+            else:
+                return False        
+                
+            
    
     def SiftCorrTool(self,window=70):
         """function for performing the correction of moving point2 to match the image shown around point1

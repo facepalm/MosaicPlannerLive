@@ -497,7 +497,7 @@ class MosaicImage():
         two_cuta=cv2.equalizeHist(two_cuta)
         
         
-        sift = cv2.xfeatures2d.SIFT(nfeatures=SiftSettings.numFeatures,contrastThreshold=SiftSettings.contrastThreshold)
+        sift = cv2.SIFT(nfeatures=SiftSettings.numFeatures,contrastThreshold=SiftSettings.contrastThreshold)
         kp1, des1 = sift.detectAndCompute(one_cuta,None)
         kp2, des2 = sift.detectAndCompute(two_cuta,None)
         print "features1:%d"%len(kp1)
