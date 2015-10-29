@@ -9,7 +9,7 @@ import time
 
 import MMCorePy
 import cv2
-#from pyqtgraph.widgets.RawImageWidget import RawImageGLWidget, RawImageWidget
+from pyqtgraph.widgets.RawImageWidget import RawImageWidget
 import functools
 
 class VideoView(QtGui.QWidget):
@@ -40,8 +40,9 @@ class VideoView(QtGui.QWidget):
         # # mmc.setCircularBufferMemoryFootprint(100)
         self.cam=self.mmc.getCameraDevice()
         self.mmc.setExposure(50)
-        if self.mmc.hasProperty(self.cam,'Gain'):
-            self.mmc.setProperty(self.cam, 'Gain', 1)
+        if self.mmc.hasProperty(self.cam,'Gain'):            
+            #self.mmc.setProperty(self.cam, 'Gain', 1)
+            pass
         Nch=len(self.channels)
         startChan=self.channels[Nch-1]
         for ch in self.channels:
@@ -86,7 +87,7 @@ class VideoView(QtGui.QWidget):
         
         keys = self.exposure_times.keys()
         
-        gridlay=QtGui.QGridLayout(spacing=-1)
+        gridlay=QtGui.QGridLayout(margin=0,spacing=-1)
         for i,ch in enumerate(self.channels):
             btn=QtGui.QPushButton(ch,self)
             self.chnButtons.append(btn)
@@ -141,7 +142,7 @@ class VideoView(QtGui.QWidget):
             exposure_times[ch]=spnBox.value()
         return exposure_times
         
-    def setExposureAuto(self):
+    def setExposureAuto(self,evt):
     
         self.mmc.stopSequenceAcquisition() 
         perc=95; #the goal is to make the X percentile value equal to Y percent of the maximum value
@@ -253,10 +254,13 @@ class VideoView(QtGui.QWidget):
 
     def lut_convert16as8bit(self,image, display_min, display_max) :
         lut = np.arange(2**16, dtype='uint16')
-        if display_max >= 2**16: display_max = 2**16 - 1
-        lut = self.display8bit(lut, display_min, display_max)        
-        return np.take(lut, image)
-        
+        if display_max >= 2**16: display_max = 2**16
+        newlut = self.display8bit(lut, display_min, display_max)
+        print "min to max",np.min(newlut),np.max(newlut)
+        newimage = np.take(newlut, image)
+        print "new image shape",newimage.shape
+        return newimage
+
     def updateData(self):
     
         remcount = self.mmc.getRemainingImageCount()
@@ -265,13 +269,23 @@ class VideoView(QtGui.QWidget):
             #rgb32 = self.mmc.popNextImage()
             data =  self.mmc.getLastImage()
             if data.dtype == np.uint16:
-                #maxval = data.max() #auto-scales the brightness to fill dynamic range
-                maxval= self.imgSrc.get_max_pixel_value()
-                data=self.lut_convert16as8bit(data,0,maxval)
-            gray = data.transpose()
+                maxval=self.imgSrc.get_max_pixel_value()
+                #print "max val is",maxval
+                #print 'max_before',np.max(data)
+                #data = exposure.rescale_intensity(data,in_range=(0,maxval))
+                #print 'max after rescale',np.max(data)
+                #data = img_as_ubyte(data)
+                #data=self.lut_convert16as8bit(data,0,5000)
 
-            #Should be taken care of in imageSource.get_image_orientation
-            flipped = np.fliplr(gray)
+                # "maxval",maxval,np.max(data),data.dtype
+            data = np.rot90(data)
+            flipx,flipy,trans = self.imgSrc.get_image_flip()
+            if trans:
+                data = np.transpose(data)
+            if flipx:
+                data = np.fliplr(data)
+            if flipy:
+                data = np.flipud(data)
            
             #gray=cv2.equalizeHist(gray)
             self.img.setImage(flipped,autoLevels=True)
@@ -279,14 +293,14 @@ class VideoView(QtGui.QWidget):
         #else:
             #print('No frame')
         
-        #TODO: check if window is open and stop refreshing if it isn't.
-        QtCore.QTimer.singleShot(self.mmc.getExposure(), self.updateData)
-        #now = ptime.time()
-        #fps1 = 1.0 / (now-self.updateTime)
-        #self.updateTime = now
-        #self.fps = self.fps * 0.6 + fps1 * 0.4
-        #if self.i == 0:
-        #    print "%0.1f fps" % self.fps
+        if not self.ended:
+            self.timer = QtCore.QTimer.singleShot(self.mmc.getExposure(), self.updateData)
+        now = ptime.time()
+        fps1 = 1.0 / (now-self.updateTime)
+        self.updateTime = now
+        self.fps = self.fps * 0.6 + fps1 * 0.4
+        if self.i == 0:
+            print "%0.1f fps" % self.fps
             
  
 #def myExitHandler(mmc): 
@@ -309,4 +323,3 @@ def launchLive(mmc,exposure_times):
         QtGui.QApplication.instance().exec_()
         
     return vidview.getExposureTimes()
-    
