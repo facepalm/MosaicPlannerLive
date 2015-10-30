@@ -13,8 +13,6 @@ from pyqtgraph.widgets.RawImageWidget import RawImageWidget
 import functools
 from imageSourceMM import imageSource
 
-import pyqtgraph
-print pyqtgraph.__version__
 
 class VideoView(QtGui.QWidget):
     def __init__(self,imgSrc,exposure_times=dict([]),channelGroup="Channels"):
