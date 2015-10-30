@@ -13,6 +13,8 @@ from pyqtgraph.widgets.RawImageWidget import RawImageWidget
 import functools
 from imageSourceMM import imageSource
 
+import pyqtgraph
+print pyqtgraph.__version__
 
 class VideoView(QtGui.QWidget):
     def __init__(self,imgSrc,exposure_times=dict([]),channelGroup="Channels"):
@@ -87,7 +89,7 @@ class VideoView(QtGui.QWidget):
         
         keys = self.exposure_times.keys()
         
-        gridlay=QtGui.QGridLayout(margin=0,spacing=-1)
+        gridlay=QtGui.QGridLayout(spacing=-1)
         for i,ch in enumerate(self.channels):
             btn=QtGui.QPushButton(ch,self)
             self.chnButtons.append(btn)
