@@ -87,7 +87,7 @@ class VideoView(QtGui.QWidget):
         
         keys = self.exposure_times.keys()
         
-        gridlay=QtGui.QGridLayout(margin=0,spacing=-1)
+        gridlay=QtGui.QGridLayout(spacing=-1)
         for i,ch in enumerate(self.channels):
             btn=QtGui.QPushButton(ch,self)
             self.chnButtons.append(btn)
