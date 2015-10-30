@@ -23,6 +23,7 @@ from PIL import Image
 import numpy as np
 import threading
 import os
+import sys
 import Queue
 from CenterRectangle import CenterRectangle
 from matplotlib.lines import Line2D
@@ -32,10 +33,9 @@ from Rectangle import Rectangle
 import cv2 
 import ransac
 from scipy.signal import correlate2d
-from skimage.measure import block_reduce
+#from skimage.measure import block_reduce
 import norm_xcorr
 #implicity this relies upon matplotlib.axis matplotlib.AxisImage matplotlib.bar 
-
 
 #my custom 2d correlation function for numpy 2d matrices.. 
 def mycorrelate2d(fixed,moved,skip=1):
@@ -57,7 +57,7 @@ def mycorrelate2d(fixed,moved,skip=1):
     if the variance in the subsampled region of fixed is lower than the variance of the entire matrix
     
     """
-    if skip>1:
+    if skip>1 and 'block_reduce' in sys.modules:
         fixed = block_reduce(fixed,block_size = (int(skip),int(skip)),func = np.mean,cval=np.mean(fixed))
         moved = block_reduce(moved,block_size = (int(skip),int(skip)),func = np.mean,cval=np.mean(moved))
 
