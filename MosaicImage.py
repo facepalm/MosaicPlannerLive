@@ -178,7 +178,7 @@ class MosaicImage():
         self.currentPosLine2D.set_xdata([x])
         self.currentPosLine2D.set_ydata([y])
         self.axis.draw_artist(self.currentPosLine2D)
-        self.fig.canvas.draw()
+        #self.fig.canvas.draw()
         self.cursor_timer = threading.Timer(1, self.update_pos_cursor)
         self.cursor_timer.start()
 
