@@ -1214,7 +1214,7 @@ class ZVISelectFrame(wx.Frame):
 
 #dirname=sys.argv[1]
 #print dirname
-faulthandler.enable()
+#faulthandler.enable()
 app = wx.App(False)  
 # Create a new app, don't redirect stdout/stderr to a window.
 frame = ZVISelectFrame(None,"Mosaic Planner") 
