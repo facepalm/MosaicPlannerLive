@@ -29,6 +29,7 @@ class VideoView(QtGui.QWidget):
         self.i = 0
         self.updateTime = ptime.time()
         self.fps = 0
+        self.ended = False
         
         self.updateData()
        
