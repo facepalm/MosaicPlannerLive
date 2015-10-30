@@ -289,7 +289,7 @@ class VideoView(QtGui.QWidget):
                 data = np.flipud(data)
            
             #gray=cv2.equalizeHist(gray)
-            self.img.setImage(flipped,autoLevels=True)
+            self.img.setImage(data,autoLevels=True)
             #cv2.imshow('Video', gray)
         #else:
             #print('No frame')
